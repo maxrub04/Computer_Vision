@@ -1,4 +1,4 @@
-from solutions.project1 import secret_image_processing
+#from solutions.project1 import secret_image_processing
 import sys, numpy as np, cv2 as cv
 
 capture = cv.VideoCapture( cv.CAP_ANY)
@@ -12,7 +12,7 @@ while True:
     _, frame = capture.read()
     
     # implement this
-    frame = secret_image_processing(frame)
+    #frame = secret_image_processing(frame)
     
     frame = frame if frame is not None else last_frame 
     last_frame = frame
