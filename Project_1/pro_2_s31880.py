@@ -18,8 +18,8 @@ while True:
 
     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
-    mask0 = cv.inRange(hsv, np.array([0, 150, 0], np.uint8),    np.array([15, 255, 255], np.uint8))
-    mask1 = cv.inRange(hsv, np.array([165, 150, 70], np.uint8), np.array([179, 255, 255], np.uint8))
+    mask0 = cv.inRange(hsv, np.array([0, 180, 70], np.uint8),    np.array([10, 255, 255], np.uint8))
+    mask1 = cv.inRange(hsv, np.array([165, 180, 70], np.uint8), np.array([179, 255, 255], np.uint8))
 
     combined_mask = cv.bitwise_or(mask0, mask1)
     combined_mask = cv.morphologyEx(combined_mask, cv.MORPH_OPEN, kernel)
@@ -41,7 +41,6 @@ while True:
 
     elif last_cx is not None:
         cv.circle(frame, (last_cx, last_cy), 30, (200, 200, 200), 2)
-        cv.circle(frame, (last_cx, last_cy), 5, (200, 200, 200), -1)
         cv.putText(frame, 'Red ball (last seen)', (last_cx - 60, last_cy - 20),
                    cv.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 2)
 

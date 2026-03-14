@@ -9,14 +9,14 @@ if img is None:
 hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 kernel = np.ones((5, 5), np.uint8)
 
-mask0 = cv.inRange(hsv, np.array([0, 150, 0], np.uint8),   np.array([15, 255, 255], np.uint8))
+mask0 = cv.inRange(hsv, np.array([0, 150, 70], np.uint8),   np.array([15, 255, 255], np.uint8))
 mask1 = cv.inRange(hsv, np.array([165, 150, 70], np.uint8), np.array([179, 255, 255], np.uint8))
 
 combined_mask = cv.bitwise_or(mask0, mask1)
 combined_mask = cv.morphologyEx(combined_mask, cv.MORPH_OPEN, kernel)
 combined_mask = cv.morphologyEx(combined_mask, cv.MORPH_CLOSE, kernel)
 
-contours, i = cv.findContours(combined_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+contours, _ = cv.findContours(combined_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
 if contours:
     largest = max(contours, key=cv.contourArea)
