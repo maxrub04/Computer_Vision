@@ -36,16 +36,16 @@ while True:
 
             cv.drawContours(frame, [largest], -1, (255, 255, 255), 2)
             cv.circle(frame, (last_cx, last_cy), 5, (255, 255, 255), -1)
-            cv.putText(frame, 'Red ball', (last_cx - 40, last_cy - 20),
-                       cv.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            cv.putText(frame, 'Red ball', (last_cx - 40, last_cy - 40),
+                       cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
     elif last_cx is not None:
         cv.circle(frame, (last_cx, last_cy), 30, (200, 200, 200), 2)
-        cv.putText(frame, 'Red ball (last seen)', (last_cx - 60, last_cy - 20),
-                   cv.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 2)
+        cv.putText(frame, 'Red ball (last seen)', (last_cx - 40, last_cy - 40),
+                   cv.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 2)
 
     cv.imshow('Red Ball', frame)
-    if cv.waitKey(30) & 0xFF == ord('q'):
+    if cv.waitKey(30)  == ord('q'):
         break
 
 cap.release()
