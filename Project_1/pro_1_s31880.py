@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 
-img = cv.imread('red_ball1.jpg')
+img = cv.imread('red_ball.jpg')
 if img is None:
     print("Image not found")
     exit()
