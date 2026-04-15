@@ -95,19 +95,19 @@ def annotate_and_count(image: np.ndarray, image_name: str) -> np.ndarray:
             color = (0, 0, 255)
         elif is_large and not inside:
             large_outside += 1
-            color = (0, 128, 255)
+            color = (0, 0, 255)
         elif not is_large and inside:
             small_inside += 1
             color = (255, 0, 0)
         else:
             small_outside += 1
-            color = (255, 255, 0)
+            color = (255, 0, 0)
 
         cv.circle(output, (x, y), r, color, 2)
         cv.circle(output, (x, y), 2, color, -1)
 
     lines = [
-        f"Tray area: {tray_area:.1f} px",
+        f"Tray area: {tray_area} ",
         f"Large inside: {large_inside}",
         f"Large outside: {large_outside}",
         f"Small inside: {small_inside}",
