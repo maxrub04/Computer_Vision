@@ -107,12 +107,11 @@ def annotate_and_count(image: np.ndarray, image_name: str) -> np.ndarray:
         cv.circle(output, (x, y), 2, color, -1)
 
     lines = [
-        image_name,
+        f"Tray area: {tray_area:.1f} px",
         f"Large inside: {large_inside}",
         f"Large outside: {large_outside}",
         f"Small inside: {small_inside}",
         f"Small outside: {small_outside}",
-        f"Tray area: {tray_area:.1f} px",
     ]
 
     y0 = 28
