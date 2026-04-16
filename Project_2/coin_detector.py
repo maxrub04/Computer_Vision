@@ -35,7 +35,7 @@ def detect_coin_circles(image: np.ndarray) -> list[tuple[int, int, int]]:
         dp=1.2,
         minDist=40,
         param1=90,
-        param2=47.5,
+        param2=55,
         minRadius=10,
         maxRadius=90,
     )
