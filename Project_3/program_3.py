@@ -13,19 +13,23 @@ if not cap.isOpened():
 
 sift = cv.SIFT_create()
 kp_q, des_q = sift.detectAndCompute(query_img, None)
+if des_q is None or len(kp_q) < 2:
+    print("Query image has too few SIFT features for matching")
+    exit()
 
-flann = cv.FlannBasedMatcher(dict(algorithm=1, trees=5), dict(checks=50))
+flann = cv.FlannBasedMatcher(dict(algorithm=1, trees=3), dict(checks=40))
+
+min_good_matches = 10
+min_ransac_inliers = 8
 
 qh, qw = query_img.shape
+query_area = float(qw * qh)
+min_area_ratio = 0.1
+max_area_ratio = 1.0
 query_corners = np.float32([[0, 0], [0, qh - 1], [qw - 1, qh - 1], [qw - 1, 0]]).reshape(-1, 1, 2)
 
 fps = cap.get(cv.CAP_PROP_FPS) or 30.0
 frame_delay = max(1, int(1000.0 / fps))
-
-last_corners = None
-smoothed = None
-alpha = 0.35
-max_jump = 80
 
 while True:
     ret, frame = cap.read()
@@ -47,58 +51,54 @@ while True:
 
     new_corners = None
     inliers = 0
-    inlier_mask = None
+    status = ""
 
-    if len(good) >= 10:
+    if des_t is None or len(kp_t) < 2:
+        status = "no features in frame (need SIFT descriptors)"
+    elif len(good) < min_good_matches:
+        status = f"not enough good matches: {len(good)}/{min_good_matches}"
+    else:
         src_pts = np.float32([kp_q[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
         dst_pts = np.float32([kp_t[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
 
         H, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 5.0)
 
-        if H is not None and mask is not None:
+        if H is None or mask is None:
+            status = "homography failed (no robust fit)"
+        else:
             inliers = int(mask.sum())
-            inlier_mask = mask.ravel()
-
-            if inliers >= 8:
-                projected = cv.perspectiveTransform(query_corners, H)
-
-                if smoothed is None:
-                    new_corners = projected
+            if inliers < min_ransac_inliers:
+                status = f"not enough inliers: {inliers}/{min_ransac_inliers}"
+            else:
+                new_corners = cv.perspectiveTransform(query_corners, H)
+                proj_area = abs(cv.contourArea(new_corners))
+                r = proj_area / query_area if query_area > 0 else 0.0
+                if r < min_area_ratio or r > max_area_ratio:
+                    new_corners = None
+                    status = f"rejected pose: area ratio {r:.2f} (allowed {min_area_ratio}-{max_area_ratio})"
                 else:
-                    diff = np.linalg.norm(projected - smoothed, axis=2).max()
-                    if diff < max_jump:
-                        new_corners = projected
+                    status = f" {len(good)} matches"
 
     if new_corners is not None:
-        if smoothed is None:
-            smoothed = new_corners
-        else:
-            smoothed = alpha * new_corners + (1.0 - alpha) * smoothed
-
-        last_corners = smoothed
-        color = (0, 255, 0)
-        status = f"matches: {len(good)}  inliers: {inliers}"
-
-        if inlier_mask is not None:
-            for i, m in enumerate(good):
-                if inlier_mask[i]:
-                    pt = kp_t[m.trainIdx].pt
-                    cv.circle(frame, (int(pt[0]), int(pt[1])), 3, (0, 255, 0), -1)
-
-    elif last_corners is not None:
-        color = (0, 165, 255)
-        status = f"last good position (matches: {len(good)})"
-    else:
-        color = None
-        status = f"searching... (matches: {len(good)})"
-
-    if last_corners is not None and color is not None:
-        cv.polylines(frame, [np.int32(last_corners)], True, color, 3, cv.LINE_AA)
+        cv.polylines(frame, [np.int32(new_corners)], True, (0, 255, 0), 3, cv.LINE_AA)
 
     cv.putText(frame, status, (10, 25), cv.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 3)
     cv.putText(frame, status, (10, 25), cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
 
-    cv.imshow('Feature Matching - Video', frame)
+
+    result = cv.drawMatches(
+        query_img, kp_q,
+        frame, kp_t,
+        good, None,
+        matchColor=(0, 255, 0),
+        singlePointColor=None,
+        flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS,
+    )
+
+
+    cv.imshow('Feature Matching - Video', result)
+
+
     if cv.waitKey(frame_delay) & 0xFF == ord('q'):
         break
 
